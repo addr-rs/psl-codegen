@@ -72,17 +72,18 @@ fn process<P: AsRef<Path>>(funcs: &mut TokenStream, path: P) -> TokenStream {
     for val in list.rules.values() {
         for suffix in val {
             let rule = suffix.rule.replace('*', "_");
-            let labels: Vec<_> = rule
-                .split('.')
+            let labels: Vec<_> = rule.split('.').map(|s| s.to_owned()).rev().collect();
+            tree.insert(labels.iter(), suffix.typ);
+            let labels: Vec<_> = labels
+                .into_iter()
                 .map(|label| {
-                    idna::punycode::encode_str(&label).unwrap_or_else(|| {
+                    idna::domain_to_ascii(&label).unwrap_or_else(|_| {
                         panic!(
                             "expected: a label that can be converted to ascii, found: {}",
                             label
                         )
                     })
                 })
-                .rev()
                 .collect();
             tree.insert(labels.iter(), suffix.typ);
         }
