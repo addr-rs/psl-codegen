@@ -41,8 +41,8 @@ struct Depth(usize);
 
 fn process<P: AsRef<Path>>(funcs: &mut TokenStream, path: P) -> TokenStream {
     let data = psl_lexer::request(psl_lexer::LIST_URL).expect("failed to download the list");
-    std::fs::write(path, &data).expect("failed to write the list to disk");
     let mut list = List::from_str(&data).expect("failed to build the list");
+    std::fs::write(path, list.all().join("\r\n")).expect("failed to write the list to disk");
 
     let mut tlds = Vec::new();
     for key in &["PSL_TLD", "PSL_TLDS"] {
